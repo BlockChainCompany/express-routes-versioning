@@ -1,12 +1,14 @@
 var app = require('express')();
-var routesVersioning = require('../index')();
+var RoutesVersioning = require('../index');
 app.listen(3000);
 
-app.get('/test', routesVersioning({
-   "1.0.0": respondV1,
-   "~2.2.1": respondV2,
-   "2.5.0": respondV3
-}));
+app.get('/', new RoutesVersioning()
+  .add("1.0.0", respondV1)
+  .add("2.0.0", respondV2)
+  .add("2.5.0", respondV3)
+  .add("3.0.0", respondV4)
+  .toMiddleware()
+);
 
 
 //curl -s -H 'accept-version: 1.0.0' localhost:3000/test
@@ -27,4 +29,8 @@ function respondV2(req, res, next) {
  // version callback is called by default (if NoMatchFoundCallback is not found)
 function respondV3(req, res, next) {
     res.status(200).send('ok v3');
+}
+
+function respondV4(req, res, next) {
+    res.status(200).send('ok v4');
 }
