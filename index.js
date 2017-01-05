@@ -25,7 +25,7 @@ class VersionedRoute {
    toMiddleware () {
       return (req, res, next) => {
          // Defaults to latest version if  version header is not set
-         const version = getVersion(req, this.header)|| '*');
+         const version = getVersion(req, this.header) || '*';
          console.log(version);
          const availableVersions = this.versions;
          const selectedVersion = semver.maxSatisfying(availableVersions, version);
