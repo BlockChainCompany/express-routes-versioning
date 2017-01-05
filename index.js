@@ -105,7 +105,7 @@ function  findLatestVersion(versions) {
 
 function trimVersion (version) {
    const vArr = version.split(0);
-   vArr[0] = v1Arr[0].replace('^', '').replace('~', '');
+   vArr[0] = vArr[0].replace('^', '').replace('~', '');
 
    return `${vArr[0] || 0}.${vArr[1] || 0}.${vArr[2] || 0}`
 }
