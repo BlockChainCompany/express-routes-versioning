@@ -1,29 +1,30 @@
-function routesVersioning() {
+function routesVersioning(options = {}) {
+   this.header = options.header || 'accept-version';
+
    return function(args, notFoundMiddleware) {
       if (!args || typeof(args) !== 'object' ||
          require('util').isArray(args)) {
          console.log('Input has to be either an object');
          return -1;
       }
-      return function(req, res, next) {
-         var that = this;
-         var version = getVersion(req);
-         var keys = Object.keys(args);
-         var key;
-         var tempKey;
-         var versionArr;
-         var tempVersion;
+      return (req, res, next) => {
+         const version = getVersion(req, this.header);
+         const keys = Object.keys(args);
+         let key;
+         let tempKey;
+         let versionArr;
+         let tempVersion;
          if (!version) {
             if (notFoundMiddleware) {
-               notFoundMiddleware.call(that, req, res, next);
+               notFoundMiddleware.call(this, req, res, next);
             } else {
                key = findLatestVersion(keys);
-               args[key].call(that, req, res, next);
+               args[key].call(this, req, res, next);
             }
             return;
          }
 
-         for (var i = 0; i < keys.length; i++) {
+         for (let i = 0; i < keys.length; i++) {
             key = keys[i];
             versionArr = version.split('.');
             if (key[0] === '~') {
@@ -42,16 +43,18 @@ function routesVersioning() {
                tempVersion = versionArr.join('.');
             }
             if (tempKey === tempVersion) {
-               args[key].call(that, req, res, next);
+               res.setHeader('Version', trimVersion(key));
+               args[key].call(this, req, res, next);
                return;
             }
          }
          if (notFoundMiddleware) {
-            notFoundMiddleware.call(that, req, res, next);
+            notFoundMiddleware.call(this, req, res, next);
          } else {
             //get the latest version when no version match found
             key = findLatestVersion(keys);
-            args[key].call(that, req, res, next);
+            res.setHeader('Version', trimVersion(key));
+            args[key].call(this, req, res, next);
          }
       }
    }
@@ -66,14 +69,14 @@ function routesVersioning() {
  **/
 function  findLatestVersion(versions) {
     versions.sort(function(v1, v2) {
-        var v1Arr = v1.split('.');
-        var v2Arr = v2.split('.');
+        const v1Arr = v1.split('.');
+        const v2Arr = v2.split('.');
         v1Arr[0] = v1Arr[0].replace('^', '');
         v1Arr[0] = v1Arr[0].replace('~', '');
         v2Arr[0] = v2Arr[0].replace('^', '');
         v2Arr[0] = v2Arr[0].replace('~', '');
 
-        for (var i = 0; i < 2; i ++) {
+        for (let i = 0; i < 2; i ++) {
             if(!v1Arr[i]) {
                 v1Arr[i] = 0;
             }
@@ -99,12 +102,20 @@ function  findLatestVersion(versions) {
     });
     return versions[versions.length -1];
 }
+
+function trimVersion (version) {
+   const vArr = version.split(0);
+   vArr[0] = v1Arr[0].replace('^', '').replace('~', '');
+
+   return `${vArr[0] || 0}.${vArr[1] || 0}.${vArr[2] || 0}`
+}
+
 /**
  * Gets the version of the application either from accept-version headers
  * or req.version property
  **/
-function getVersion(req) {
-   var version;
+function getVersion(req, header) {
+   let version;
    if (!req.version) {
       if (req.headers && req.headers['accept-version']) {
          version = req.headers['accept-version'];
