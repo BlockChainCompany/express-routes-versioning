@@ -11,8 +11,8 @@ will add to npm soon(tm)
 Follows semver versioning format. See https://github.com/npm/node-semver for more info.
 
 ```
-    var app = require('express')();
-    var routesVersioning = require('express-routes-versioning')();
+    const app = require('express')();
+    const VersionedRoute = require('express-versioned-route');
     app.listen(3000);
 
     app.get('/test', new VersionedRoute()
@@ -41,14 +41,19 @@ Follows semver versioning format. See https://github.com/npm/node-semver for mor
 **Options** - object, containing version in semver format (supports ^,~ symbols) as key and function callback (connect middleware format) to invoke when the request matches the version as value. Note: Versions are expected to be mutually exclusive, as order of execution of the version couldn't be determined.
 
 ***header*** (optional) - Header to watch for: defaults to `Accept-Version`
+
 ***callbacks*** (optional) - A way to directly provide callbacks and their version.
+
 ***notFoundMiddleware*** (optional)- called if request version doesn't match the version provided in the options. If this callback is not provided latest version callback is called.
 
 `.add(version : String, callback : Function) : VersionedRoute`
+
 **version** - string, The version. you can not use any semver operators here. Those are only allowed in the header. `1.2.3`
+
 **callback** - function, it's obvious isn't it? `(req, res, next) => {}`
 
 `.toMiddleware() : Function`
+
 Returns the middleware function
 
 
