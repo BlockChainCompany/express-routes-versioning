@@ -1,27 +1,25 @@
-# Express routes versioning
-
-[![Build Status](https://travis-ci.org/Prasanna-sr/express-routes-versioning.svg?branch=master)](https://travis-ci.org/Prasanna-sr/express-routes-versioning) [![Coverage Status](https://coveralls.io/repos/github/Prasanna-sr/express-routes-versioning/badge.svg?branch=master)](https://coveralls.io/github/Prasanna-sr/express-routes-versioning?branch=master)
-[![npm version](https://badge.fury.io/js/express-routes-versioning.svg)](http://badge.fury.io/js/express-routes-versioning)
-
+# Express Versioned Routes
 
 Simple node.js module provides versioning for expressjs routes/api.
 
 ## Install
-`npm install express-routes-versioning`
+`npm install BlockchainCompany/express-versioned-route`
+will add to npm soon(tm)
 
 ## Usage
 
-Follows semver versioning format. Supports '^, ~' symbols for matching version numbers.
+Follows semver versioning format. See https://github.com/npm/node-semver for more info.
 
 ```
     var app = require('express')();
     var routesVersioning = require('express-routes-versioning')();
     app.listen(3000);
 
-    app.get('/test', routesVersioning({
-       "1.0.0": respondV1,
-       "~2.2.1": respondV2
-    }));
+    app.get('/test', new VersionedRoute()
+       .add('1.0.0', respondV1)
+       .add('2.2.1', respondV2)
+       .toMiddleware()
+    );
 
     // curl -s -H 'accept-version: 1.0.0' localhost:3000/test
     // version 1.0.0 or 1.0 or 1 !
@@ -35,31 +33,53 @@ Follows semver versioning format. Supports '^, ~' symbols for matching version n
        res.status(200).send('ok v2');
     }
 ```
-Supporting '^,~' on server might appear as an anti-pattern considering how npm versioning works, where client controls the version. Here server controls the version (or it may not), and client fully trust the server. Typically the client and server belong to the same organization in these cases.
 
 **API**
 
-`routesVersioning(Options, NoMatchFoundCallback)`
+`new VersionedRoute(options)`
 
 **Options** - object, containing version in semver format (supports ^,~ symbols) as key and function callback (connect middleware format) to invoke when the request matches the version as value. Note: Versions are expected to be mutually exclusive, as order of execution of the version couldn't be determined.
 
-**NoMatchFoundCallback** (optional)- called if request version doesn't match the version provided in the options. If this callback is not provided latest version callback is called.
+***header*** (optional) - Header to watch for: defaults to `Accept-Version`
+***callbacks*** (optional) - A way to directly provide callbacks and their version.
+***notFoundMiddleware*** (optional)- called if request version doesn't match the version provided in the options. If this callback is not provided latest version callback is called.
+
+`.add(version : String, callback : Function) : VersionedRoute`
+**version** - string, The version. you can not use any semver operators here. Those are only allowed in the header. `1.2.3`
+**callback** - function, it's obvious isn't it? `(req, res, next) => {}`
+
+`.toMiddleware() : Function`
+Returns the middleware function
 
 
 **How version is determined for each request ?**
 
 Default behaviour is to use `accept-version` headers from the client.
 
-This can be overridden by using a middleware and providing version in `req.version` property.
+This can be overridden by using a middleware and providing version in `req.version` property or setting the header option.
 
 **How versions are matched ?**
 
-semver versioning format is used to match version if versions are provided in semver format, supports ^,~ symbols on the server, else direct mapping is used (for versions like 1, 1.1)
+semver versioning format is used to match version if versions are provided in semver format, supports ^,~ symbols on the client, else direct mapping is used (for versions like 1, 1.1)
+If no version is found, the latest one is returned.
+
+## Known Issues
+
+If you define something like
+```
+    new VersionedRoute()
+       .add('2.2.1', respondV1)
+       .add('2.2.3', respondV2)
+       .toMiddleware()
+    );
+```
+and the client sends `Accept-Version: 2.2.2`, the latest version is returned.
+
 
 ## Examples
 
-Examples are available [here](https://github.com/Prasanna-sr/express-routes-versioning/tree/master/examples)
+Examples are available [here](https://github.com/BlockChainCompany/express-versioned-route/tree/master/examples)
 
 ## Test
-
+    (currently not working)
 `npm test`
