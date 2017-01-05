@@ -1,6 +1,6 @@
 const semver = require('semver');
 
-class RoutesVersioning {
+class VersionedRoute {
 
    constructor (options = {}) {
       // Parse options
@@ -65,4 +65,4 @@ function getVersion (req, header) {
    return version;
 }
 
-module.exports = RoutesVersioning;
+module.exports = VersionedRoute;

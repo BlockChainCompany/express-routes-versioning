@@ -1,5 +1,5 @@
 {
-  "name": "express-routes-versioning",
+  "name": "express-versioned-route",
   "version": "0.4.0",
   "description": "Node.js module provides versioning for expressjs routes/api",
   "main": "index.js",

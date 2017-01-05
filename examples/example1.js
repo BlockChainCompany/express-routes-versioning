@@ -1,8 +1,9 @@
-var app = require('express')();
-var RoutesVersioning = require('../index');
+const app = require('express')();
+const VersionedRoute = require('../index');
+
 app.listen(3000);
 
-app.get('/', new RoutesVersioning()
+app.get('/', new VersionedRoute()
   .add("1.0.0", respondV1)
   .add("2.0.0", respondV2)
   .add("2.5.0", respondV3)
